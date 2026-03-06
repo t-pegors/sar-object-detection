@@ -1,0 +1,6 @@
+[core]
+    autostage = true
+    remote = s3remote
+['remote "s3remote"']
+    url = s3://sar-dvc/sar-dvc-cache
+    region = us-east-2

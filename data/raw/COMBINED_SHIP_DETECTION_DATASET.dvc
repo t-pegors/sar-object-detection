@@ -1,0 +1,6 @@
+outs:
+- md5: c3246e8c2810f85c920a5493d831e779.dir
+  size: 1508364977
+  nfiles: 47411
+  hash: md5
+  path: COMBINED_SHIP_DETECTION_DATASET
