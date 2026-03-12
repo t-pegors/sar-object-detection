@@ -8,9 +8,11 @@ Usage:
     python src/train.py                          # YOLOv8n, default config
     python src/train.py --model yolov8s          # YOLOv8s
     python src/train.py --model rtdetr-l         # RT-DETR
+    python src/train.py --model fasterrcnn       # Faster R-CNN (ResNet-50 FPN)
     python src/train.py --epochs 50 --imgsz 1024 # custom settings
     python src/train.py --resume                 # resume most recent interrupted run
-    python src/train.py --resume yolov8n_sz1024_ep50_0309_0905  # resume specific run
+    python src/train.py --resume yolov8n_sz1024_ep50_0309_0905  # resume specific YOLO run
+    python src/train.py --resume fasterrcnn_sz1024_ep50_0311_0900  # resume Faster R-CNN
 
 MLFlow experiment structure:
     Experiment: "sar-ship-detection"
@@ -240,7 +242,7 @@ def _find_latest_interrupted_run() -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train SAR ship detector")
-    parser.add_argument("--model", default="yolov8n", help="Model name (yolov8n/s/m/l, rtdetr-l)")
+    parser.add_argument("--model", default="yolov8n", help="Model name (yolov8n/s/m/l, rtdetr-l, fasterrcnn)")
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--imgsz", type=int, default=1024)
     parser.add_argument("--batch", type=int, default=8)
@@ -263,18 +265,32 @@ def main() -> None:
         run_dir_name = (
             _find_latest_interrupted_run() if args.resume == "auto" else args.resume
         )
-        resume_yolo(run_dir_name)
+        if run_dir_name.startswith("fasterrcnn"):
+            from src.models.faster_rcnn import resume_faster_rcnn
+            resume_faster_rcnn(run_dir_name)
+        else:
+            resume_yolo(run_dir_name)
     else:
         timestamp = time.strftime("%m%d_%H%M")
         run_name = f"{args.model}_sz{args.imgsz}_ep{args.epochs}_{timestamp}"
-        train_yolo(
-            model_name=args.model,
-            epochs=args.epochs,
-            imgsz=args.imgsz,
-            batch=args.batch,
-            device=args.device,
-            run_name=run_name,
-        )
+        if args.model == "fasterrcnn":
+            from src.models.faster_rcnn import train_faster_rcnn
+            train_faster_rcnn(
+                epochs=args.epochs,
+                imgsz=args.imgsz,
+                batch=args.batch,
+                device=args.device,
+                run_name=run_name,
+            )
+        else:
+            train_yolo(
+                model_name=args.model,
+                epochs=args.epochs,
+                imgsz=args.imgsz,
+                batch=args.batch,
+                device=args.device,
+                run_name=run_name,
+            )
 
 
 if __name__ == "__main__":

@@ -84,7 +84,7 @@ def yolo_to_coco(
 ) -> None:
     """Convert a YOLO split to a COCO JSON annotation file."""
     categories = [
-        {"id": i, "name": n, "supercategory": "object"}
+        {"id": i + 1, "name": n, "supercategory": "object"}
         for i, n in enumerate(CLASS_NAMES)
     ]
     coco: dict = {
@@ -128,7 +128,7 @@ def yolo_to_coco(
             coco["annotations"].append({
                 "id": ann_id,
                 "image_id": img_id,
-                "category_id": box["class"],
+                "category_id": box["class"] + 1,
                 "bbox": [abs_x, abs_y, abs_w, abs_h],
                 "area": abs_w * abs_h,
                 "iscrowd": 0,
